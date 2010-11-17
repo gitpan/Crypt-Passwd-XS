@@ -4,7 +4,6 @@
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
-#include <endian.h>
 #include <errno.h>
 #include <limits.h>
 #include <stdbool.h>
@@ -27,7 +26,7 @@ struct sha512_ctx
 };
 
 
-#if __BYTE_ORDER == __LITTLE_ENDIAN
+#if defined(ARCH_IS_BIG_ENDIAN) && ARCH_IS_BIG_ENDIAN == 0
 # define SWAP(n) \
   (((n) << 56)					\
    | (((n) & 0xff00) << 40)			\
@@ -462,8 +461,10 @@ sha512_crypt_r (const char *key, const char *salt, char *buffer, int buflen)
 
   /* Create byte sequence P.  */
   cp = p_bytes = alloca (key_len);
-  for (cnt = key_len; cnt >= 64; cnt -= 64)
-    cp = mempcpy (cp, temp_result, 64);
+  for (cnt = key_len; cnt >= 64; cnt -= 64) {
+    memcpy (cp, temp_result, 64);
+    cp += 64;
+  }
   memcpy (cp, temp_result, cnt);
 
   /* Start computation of S byte sequence.  */
@@ -478,8 +479,10 @@ sha512_crypt_r (const char *key, const char *salt, char *buffer, int buflen)
 
   /* Create byte sequence S.  */
   cp = s_bytes = alloca (salt_len);
-  for (cnt = salt_len; cnt >= 64; cnt -= 64)
-    cp = mempcpy (cp, temp_result, 64);
+  for (cnt = salt_len; cnt >= 64; cnt -= 64) {
+    memcpy (cp, temp_result, 64);
+    cp += 64;
+  }
   memcpy (cp, temp_result, cnt);
 
   /* Repeatedly run the collected hash value through SHA512 to burn
@@ -515,7 +518,7 @@ sha512_crypt_r (const char *key, const char *salt, char *buffer, int buflen)
 
   /* Now we can construct the result string.  It consists of three
      parts.  */
-  cp = __stpncpy (buffer, sha512_salt_prefix, MAX (0, buflen));
+  cp = stpncpy (buffer, sha512_salt_prefix, MAX (0, buflen));
   buflen -= sizeof (sha512_salt_prefix) - 1;
 
   if (rounds_custom)
@@ -526,7 +529,7 @@ sha512_crypt_r (const char *key, const char *salt, char *buffer, int buflen)
       buflen -= n;
     }
 
-  cp = __stpncpy (cp, salt, MIN ((size_t) MAX (0, buflen), salt_len));
+  cp = stpncpy (cp, salt, MIN ((size_t) MAX (0, buflen), salt_len));
   buflen -= MIN ((size_t) MAX (0, buflen), salt_len);
 
   if (buflen > 0)

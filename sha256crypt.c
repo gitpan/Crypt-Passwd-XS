@@ -5,7 +5,6 @@
 #define _GNU_SOURCE
 #endif
 
-#include <endian.h>
 #include <errno.h>
 #include <limits.h>
 #include <stdint.h>
@@ -28,8 +27,8 @@ struct sha256_ctx
 };
 
 
-#if __BYTE_ORDER == __LITTLE_ENDIAN
-# define SWAP(n) \
+#if defined(ARCH_IS_BIG_ENDIAN) && ARCH_IS_BIG_ENDIAN == 0
+# define SWAP(n)                                                        \
     (((n) << 24) | (((n) & 0xff00) << 8) | (((n) >> 8) & 0xff00) | ((n) >> 24))
 #else
 # define SWAP(n) (n)
@@ -430,8 +429,10 @@ sha256_crypt_r (const char *key, const char *salt, char *buffer, int buflen)
 
   /* Create byte sequence P.  */
   cp = p_bytes = alloca (key_len);
-  for (cnt = key_len; cnt >= 32; cnt -= 32)
-    cp = mempcpy (cp, temp_result, 32);
+  for (cnt = key_len; cnt >= 32; cnt -= 32) {
+    memcpy (cp, temp_result, 32);
+    cp += 32;
+  }
   memcpy (cp, temp_result, cnt);
 
   /* Start computation of S byte sequence.  */
@@ -446,8 +447,10 @@ sha256_crypt_r (const char *key, const char *salt, char *buffer, int buflen)
 
   /* Create byte sequence S.  */
   cp = s_bytes = alloca (salt_len);
-  for (cnt = salt_len; cnt >= 32; cnt -= 32)
-    cp = mempcpy (cp, temp_result, 32);
+  for (cnt = salt_len; cnt >= 32; cnt -= 32) {
+    memcpy (cp, temp_result, 32);
+    cp += 32;
+  }
   memcpy (cp, temp_result, cnt);
 
   /* Repeatedly run the collected hash value through SHA256 to burn
