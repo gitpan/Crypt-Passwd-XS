@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:               Crypt-Passwd-XS
-version:            0.504
+version:            0.505
 abstract:           Full XS implementation of common crypt() algorythms
 author:
     - John Lightsey <jd@cpanel.net>
