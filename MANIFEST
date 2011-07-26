@@ -24,4 +24,6 @@ t/02_des.t
 t/03_sha256.t
 t/04_sha512.t
 t/05_combined.t
-META.yml                                 Module meta-data (added by MakeMaker)
+t/06_apr.t
+META.yml                                 Module YAML meta-data (added by MakeMaker)
+META.json                                Module JSON meta-data (added by MakeMaker)
